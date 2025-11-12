@@ -2,7 +2,11 @@
  * Módulo de Servicios de Tareas (Paradigma Funcional).
  * * Este módulo contiene funciones puras para consultar y transformar
  * listas de tareas. No muta los datos de entrada y no tiene
+<<<<<<< HEAD
  * efectos secundarios.
+=======
+ * efectos secundarios. Es el "Núcleo Lógico-Funcional" de la aplicación.
+>>>>>>> b6221c58e58c06c522b1b260089e9978f1c7bf0e
  * * Cumple:
  * - Funciones Puras (100% de este módulo).
  * - Inmutabilidad (siempre devuelve nuevas listas).
@@ -10,6 +14,10 @@
  * - Dependencias inyectadas (import).
  */
 
+<<<<<<< HEAD
+=======
+// Importamos las constantes para usarlas en la lógica
+>>>>>>> b6221c58e58c06c522b1b260089e9978f1c7bf0e
 import { DIFICULTADES, DIFICULTADES_ORDEN, ESTADOS } from '../utils/constantes.js';
 
 /**
