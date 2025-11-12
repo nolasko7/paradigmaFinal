@@ -1,25 +1,13 @@
 import { randomUUID } from 'crypto'; // Para el ID único
-
-// Constantes exportadas para ser usadas por todos los módulos
-export const ESTADOS = Object.freeze({
-  PENDIENTE: 'Pendiente',
-  EN_CURSO: 'En Curso',
-  TERMINADA: 'Terminada',
-  CANCELADA: 'Cancelada',
-});
-
-export const DIFICULTADES = Object.freeze({
-  FACIL: 'Fácil',
-  MEDIO: 'Medio',
-  DIFICIL: 'Difícil',
-});
+// Importamos las constantes desde el nuevo archivo
+import { ESTADOS, DIFICULTADES } from './constantes.js';
 
 /**
  * Constructor de la entidad Tarea (Paradigma OOP).
  * @param {object} props - Propiedades iniciales.
  * @param {string} props.titulo - Título (max 100).
  * @param {string} [props.descripcion] - Descripción (max 500).
- * @param {string} [props.dificultad] - Dificultad (default: Fácil).
+ * @param {string} [props.dificultad] - Dificultad (default: Facil).
  * @param {Date | null} [props.vencimiento] - Fecha de vencimiento.
  */
 export function Tarea(props) {
@@ -33,14 +21,16 @@ export function Tarea(props) {
   if (props.descripcion && props.descripcion.length > 500) {
     throw new Error('La "descripcion" no puede exceder los 500 caracteres.');
   }
-  // (Aquí irían más validaciones)
+  
+  // Validamos dificultad usando la constante importada
+  const dificultadValida = props.dificultad && Object.values(DIFICULTADES).includes(props.dificultad);
 
   // --- Atributos Internos (Estado) ---
   this.id = randomUUID(); // ID Único
   this.titulo = props.titulo.trim();
   this.descripcion = props.descripcion || '';
-  this.estado = ESTADOS.PENDIENTE;
-  this.dificultad = props.dificultad || DIFICULTADES.FACIL;
+  this.estado = ESTADOS.PENDIENTE; // Se usa la constante importada
+  this.dificultad = dificultadValida ? props.dificultad : DIFICULTADES.FACIL; // Se usa la constante importada (ahora 'Facil')
   
   this.creacion = new Date();
   this.ultimaEdicion = new Date(this.creacion.getTime());
@@ -48,8 +38,6 @@ export function Tarea(props) {
 
   /**
    * Atributo para Soft Delete.
-   * Si es 'true', la tarea no se debe mostrar en las listas
-   * pero permanecerá en la base de datos.
    */
   this.eliminado = false; 
 }
@@ -61,24 +49,26 @@ export function Tarea(props) {
  */
 Tarea.prototype.modificar = function(cambios) {
   if (cambios.titulo) {
-    // Aquí también se debería validar
+    // (validar)
     this.titulo = cambios.titulo;
   }
   if (cambios.descripcion) {
+    // (validar)
     this.descripcion = cambios.descripcion;
   }
+  // Usamos la constante importada para validar
   if (cambios.estado && Object.values(ESTADOS).includes(cambios.estado)) {
     this.estado = cambios.estado;
   }
+  // Usamos la constante importada para validar
   if (cambios.dificultad && Object.values(DIFICULTADES).includes(cambios.dificultad)) {
     this.dificultad = cambios.dificultad;
   }
   if (cambios.vencimiento !== undefined) {
-    // (validar que sea Date o null)
+    // (validar)
     this.vencimiento = cambios.vencimiento;
   }
 
-  // Toda modificación actualiza la fecha de última edición
   this.ultimaEdicion = new Date();
   console.log(`Tarea [${this.id.substring(0, 6)}] modificada.`);
 };
@@ -99,6 +89,7 @@ Tarea.prototype.marcarEliminada = function() {
  * @returns {boolean}
  */
 Tarea.prototype.estaVencida = function() {
+  // Usamos la constante importada
   if (!this.vencimiento || this.estado === ESTADOS.TERMINADA) {
     return false;
   }
@@ -110,7 +101,6 @@ Tarea.prototype.estaVencida = function() {
 /**
  * [COMPORTAMIENTO OOP]
  * Devuelve una representación simple para la persistencia en JSON.
- * Los métodos de prototipo no se guardan en JSON.
  */
 Tarea.prototype.toJSON = function() {
   return {
@@ -135,7 +125,7 @@ Tarea.prototype.toJSON = function() {
  */
 Tarea.fromJSON = function(data) {
   // 1. Creamos una instancia "vacía" de Tarea
-  const tarea = new Tarea({ titulo: data.titulo }); // (El constructor valida el título)
+  const tarea = new Tarea({ titulo: data.titulo });
 
   // 2. Sobrescribimos todos los datos con los de la BD
   Object.assign(tarea, {
