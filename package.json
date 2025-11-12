@@ -1,0 +1,21 @@
+{
+  "name": "tp-final-paradigmas",
+  "version": "1.0.0",
+  "description": "TP final integrador de Paradigmas de Programación.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "keywords": [
+    "oop",
+    "functional",
+    "imperative",
+    "logic"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
+  }
+}
