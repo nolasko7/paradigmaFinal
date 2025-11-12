@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto'; // Para el ID único
+import { randomUUID } from 'crypto'; // Para el ID nico
 // Importamos las constantes desde el nuevo archivo
 import { ESTADOS, DIFICULTADES } from './constantes.js';
 
