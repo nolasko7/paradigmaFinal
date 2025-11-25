@@ -27,6 +27,20 @@ const esPrioritaria = (tarea) => {
   return tarea.dificultad === DIFICULTADES.DIFICIL && tarea.estado !== ESTADOS.TERMINADA;
 };
 
+/**
+ * Determina si una tarea esta relacionada con otra tarea
+ * @param {Tarea} tarea - La tarea a chequear.
+ * @param {Tarea} tareaObjetivo - La tarea con la que se compara
+ * @returns {boolean}
+ */
+const esRelacionada = (tarea, tareaObjetivo) => {
+  return (  
+    tarea.id !== tareaObjetivo.id &&          // No es ella misma
+    !tarea.eliminado &&                       // No está eliminada
+    tarea.dificultad === tareaObjetivo.dificultad
+  )
+}
+
 // --- REGLAS (se exportan) ---
 
 /**
@@ -49,12 +63,14 @@ export const encontrarTareasPrioritarias = (lista) => {
   return lista.filter(esPrioritaria);
 };
 
+/**
+ * Devuelve una lista de tareas relacionadas con tareaObjetivo.
+ * @param {Tarea} lista - La lista de tareas ("hechos").
+ * @returns {Tarea} Una tarea con la cual se compara.
+ */
+
 export const encontrarTareasRelacionadas = (lista, tareaObjetivo) => {
-  return lista.filter(t => 
-    t.id !== tareaObjetivo.id &&          // No es ella misma
-    !t.eliminado &&                       // No está eliminada
-    t.dificultad === tareaObjetivo.dificultad // <--- USAR DIFICULTAD (No titulo)
-  );
+  return lista.filter(t => esRelacionada(t, tareaObjetivo));
 };
 
 
