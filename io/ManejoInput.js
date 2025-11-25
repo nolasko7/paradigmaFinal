@@ -10,7 +10,7 @@ const prompt = promptSync({ sigint: true });
  * @param {number} [max=100]
  * @returns {string | null} El string, o null si se cancela.
  */
-const _solicitarStringNoVacio = (mensaje, max = 100) => {
+export const _solicitarStringNoVacio = (mensaje, max = 100) => {
     let valor;
     do {
         valor = prompt(mensaje);
@@ -120,7 +120,7 @@ export const solicitarPropsCreacion = () => {
     if (dificultad === null) return null; // Cancelar
     if (dificultad) props.dificultad = dificultad;
 
-    const vencimiento = solicitarVencimiento("Vencimiento (AAAA-MM-DD). ENTER SI DESEA OMITIR");
+    const vencimiento = solicitarVencimiento("Vencimiento (AAAA-MM-DD). ENTER SI DESEA OMITIR: ");
 
     props.vencimiento = vencimiento;
     
@@ -201,7 +201,7 @@ export const solicitarPropsModificacion = (tarea) => {
         : 'Sin fecha';
     
     // Reutilizamos la función que creaste. Si el usuario da Enter vacío, retorna null.
-    const nuevaFecha = solicitarVencimiento(`Vencimiento [${vencimientoActual}]`);
+    const nuevaFecha = solicitarVencimiento(`Vencimiento [${vencimientoActual}]: `);
 
     // Si retorna una fecha válida (no es null), la agregamos a los cambios.
     if (nuevaFecha !== null) {

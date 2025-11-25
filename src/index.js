@@ -232,6 +232,7 @@ function casoReportes() {
   console.log(" [1] Estadísticas Generales");
   console.log(" [2] Reporte: Tareas VENCIDAS");
   console.log(" [3] Reporte: Tareas PRIORITARIAS");
+  console.log(" [4] Reporte: Tareas RELACIONADAS");
   const opcion = Inputs.solicitarOpcionMenu();
 
   switch(opcion) {
@@ -246,6 +247,22 @@ function casoReportes() {
     case '3':
       const prioritarias = encontrarTareasPrioritarias(activas);
       Menu.displayTaskList(prioritarias);
+      break;
+    case '4': 
+      const termino = Inputs.solicitarTerminoBusqueda();
+      const candidatas = buscarPorTitulo(activas, termino);
+      const tareaSeleccionada = Inputs.seleccionarTareaDeLista(candidatas, 'analizar relaciones');
+  
+      if (tareaSeleccionada) { 
+         const relacionadas = encontrarTareasRelacionadas(activas, tareaSeleccionada);
+         
+         if (relacionadas.length > 0) {
+             Menu.logInfo(`Tareas relacionadas a: "${tareaSeleccionada.titulo}"`);
+             Menu.displayTaskList(relacionadas);
+         } else {
+             Menu.logInfo("No se encontraron tareas relacionadas.");
+         }
+      }
       break;
     default:
       Menu.logInfo("Opción de reporte no válida.");

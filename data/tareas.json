@@ -53,5 +53,16 @@
     "ultimaEdicion": "2025-11-25T20:00:58.824Z",
     "vencimiento": null,
     "eliminado": false
+  },
+  {
+    "id": "c01a45f4-4618-4c41-bc0d-cacd73df9074",
+    "titulo": "///////////",
+    "descripcion": "a",
+    "estado": "Pendiente",
+    "dificultad": "Facil",
+    "creacion": "2025-11-25T20:24:20.299Z",
+    "ultimaEdicion": "2025-11-25T20:24:20.299Z",
+    "vencimiento": null,
+    "eliminado": false
   }
 ]

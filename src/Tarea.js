@@ -3,7 +3,7 @@ import { randomUUID } from 'crypto'; // Para el ID nico
 import { ESTADOS, DIFICULTADES } from '../utils/constantes.js';
 
 /**
- * Constructor de la entidad Tarea (Paradigma OOP).
+ * Constructor de la entidad Tarea.
  * @param {object} props - Propiedades iniciales.
  * @param {string} props.titulo - Título (max 100).
  * @param {string} [props.descripcion] - Descripción (max 500).
@@ -11,7 +11,7 @@ import { ESTADOS, DIFICULTADES } from '../utils/constantes.js';
  * @param {Date | null} [props.vencimiento] - Fecha de vencimiento.
  */
 export function Tarea(props) {
-  // --- Validación de Reglas de Negocio (El "Guardián" de OOP) ---
+  // --- Validación de Reglas de Negocio ---
   if (!props.titulo || typeof props.titulo !== 'string' || props.titulo.trim().length === 0) {
     throw new Error('El "titulo" es obligatorio.');
   }
@@ -43,17 +43,14 @@ export function Tarea(props) {
 }
 
 /**
- * [COMPORTAMIENTO OOP]
  * Modifica la tarea de forma MUTABLE (cambia el estado interno).
  * @param {object} cambios - Objeto con los campos a cambiar.
  */
 Tarea.prototype.modificar = function(cambios) {
   if (cambios.titulo) {
-    // (validar)
     this.titulo = cambios.titulo;
   }
   if (cambios.descripcion) {
-    // (validar)
     this.descripcion = cambios.descripcion;
   }
   // Usamos la constante importada para validar
@@ -65,7 +62,6 @@ Tarea.prototype.modificar = function(cambios) {
     this.dificultad = cambios.dificultad;
   }
   if (cambios.vencimiento !== undefined) {
-    // (validar)
     this.vencimiento = cambios.vencimiento;
   }
 
@@ -73,7 +69,7 @@ Tarea.prototype.modificar = function(cambios) {
 };
 
 /**
- * [COMPORTAMIENTO OOP - SOFT DELETE]
+ * [SOFT DELETE]
  * Marca la tarea como eliminada. No la borra físicamente.
  */
 Tarea.prototype.marcarEliminada = function() {
@@ -82,8 +78,7 @@ Tarea.prototype.marcarEliminada = function() {
 };
 
 /**
- * [COMPORTAMIENTO OOP - Encapsulación]
- * Oculta la lógica de cómo saber si una tarea está vencida.
+ * Contiene la lógica de cómo saber si una tarea está vencida.
  * @returns {boolean}
  */
 Tarea.prototype.estaVencida = function() {
@@ -97,7 +92,6 @@ Tarea.prototype.estaVencida = function() {
 };
 
 /**
- * [COMPORTAMIENTO OOP]
  * Devuelve una representación simple para la persistencia en JSON.
  */
 Tarea.prototype.toJSON = function() {
@@ -115,17 +109,15 @@ Tarea.prototype.toJSON = function() {
 };
 
 /**
- * [COMPORTAMIENTO OOP - Método Estático]
  * Re-hidrata una tarea desde un objeto JSON simple,
  * restaurando su prototipo para que los métodos funcionen.
  * @param {object} data - Datos leídos desde tareas.json
  * @returns {Tarea} Una instancia de Tarea.
  */
 Tarea.fromJSON = function(data) {
-  // 1. Creamos una instancia "vacía" de Tarea
   const tarea = new Tarea({ titulo: data.titulo });
 
-  // 2. Sobrescribimos todos los datos con los de la BD
+  // sobreescribimos en tarea los datos que hay en el JSON
   Object.assign(tarea, {
     ...data,
     // Convertimos los strings de fecha a objetos Date
