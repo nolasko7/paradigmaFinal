@@ -6,9 +6,9 @@ import fs from 'fs'; // Importamos FileSystem para persistencia
 import { Tarea } from './Tarea.js';
 
 // ESTRUCTURADO (Constantes y I/O)
-import { ESTADOS, DIFICULTADES } from './utils/constantes.js';
-import * as Menu from './io/ManejoMenu.js';
-import * as Inputs from './io/ManejoInputs.js';
+import { ESTADOS, DIFICULTADES } from '../utils/constantes.js';
+import * as Menu from '../io/ManejoMenu.js';
+import * as Inputs from '../io/ManejoInput.js';
 
 // FUNCIONAL (Transformaciones de Listas)
 import {
@@ -17,13 +17,13 @@ import {
   filtrarPorEstado,
   ordenarTareasPor,
   calcularEstadisticas
-} from './services/ServiciosTareas.js';
+} from './ServiciosTarea.js';
 
 // LÓGICO (Reglas e Inferencias)
 import {
   encontrarTareasVencidas,
   encontrarTareasPrioritarias
-} from './logic/LogicaTareas.js';
+} from './LogicaTareas.js';
 
 // --- Configuración del archivo ---
 const RUTA_BD = '../data/tareas.json';
