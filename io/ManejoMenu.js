@@ -1,7 +1,14 @@
 import {Tarea} from '../src/Tarea.js'
-
+import { DIFICULTADES } from '../utils/constantes.js';
 // FUnciones de feedback para el usuario
 /**@param {string} message */
+
+const EMOJIS_DIFICULTAD = {
+    [DIFICULTADES.FACIL]: '🟢 (Facil)',
+    [DIFICULTADES.MEDIA]: '🟡 (Media)',
+    [DIFICULTADES.DIFICIL]: '🔴 (Dificil)',
+}
+
 export const logSuccess = (message) =>{
     console.log(`✅ ${message}`);
 }
@@ -42,8 +49,8 @@ export const displayTaskList = (tasks) =>{
         const vencimiento = task.estaVencida() ? `(TAREA VENCIDA)` : '';
         //padEnd & padFirst sirve para rellenar el string con caracteres del tamaño seteado 
         const estado = `[${task.estado}]`.padEnd(12);
-        const dif = `[${task.dificultad}]`.padEnd(10);
-        console.log(`\n${estado} \n${dif} \n${task.titulo} \n${vencimiento}`);
+        const difTexto = EMOJIS_DIFICULTAD[task.dificultad] || `[${task.dificultad}]`;
+        console.log(`\n${estado} \n${difTexto} \n${task.titulo} \n${vencimiento}`);
         console.log(`\n ID = ${task.id}`)
     });
 };
@@ -69,17 +76,20 @@ export const displayTaskDetails = (task) => {
 /** @param {object} stats */
 export const displayStatistics = (stats) =>{
     console.log("--- Estadisticas de tareas ---");
-    console.log(`Total de tareas activas: ${stats.totalActivas}\n`);
+    console.log(`Total de tareas activas: ${stats.total}\n`);
+    if (stats.total > 0) {
+        console.log("Tareas por estado: ");
+    
+        Object.entries(stats.porEstado).forEach(([estado, data]) =>{
+            console.log(` - ${estado}: ${data.cantidad} (${data.porcentaje}%)`);
+        });
 
-    console.log("Tareas por estado: ");
-    if (stats.totalActivas > 0){
-        //object.entries convierte el objeto con sus estadisticas a un array, entonces si el objeto tiene pendiente = 5, lo pasa como ['pendiente', 5] para cuando lo pase a un foreach, me da el key y la cantidad,
-        Object.entries(stats.porEstado).forEach(([estado, count]) => {
-            //junto con el ToFixed devuelve un numero con un redoneo de un decimal
-            const percentage = ((count / stats.totalActivas) * 100).toFixed(1);
-            console.log(` - ${estado.padEnd(12)}: ${count} (${percentage}%)`);
+        console.log("\nTareas por dificultad: ");
+        Object.entries(stats.porDificultad).forEach(([dificultad, data]) =>{
+            const label = EMOJIS_DIFICULTAD[dificultad] || dificultad;
+            console.log(` - ${label}: ${data.cantidad} (${data.porcentaje}%)`);
         });
     } else {
-        console.log("No se han creado estadisticas de tareas");
+        console.log("No hay tareas para mostrar estadísticas.");
     }
 }

@@ -100,7 +100,9 @@ export const ordenarTareasPor = (lista, criterio) => {
  */
 export const calcularEstadisticas = (lista) => {
   // .reduce() es la HOF perfecta para agregar una lista a un solo objeto
-  const stats = lista.reduce((acumulador, tarea) => {
+  const total = lista.length;
+  // Reduccion para contar
+  const conteos = lista.reduce((acumulador, tarea) => {
     // Conteo por estado
     const estado = tarea.estado;
     acumulador.estados[estado] = (acumulador.estados[estado] || 0) + 1;
@@ -116,8 +118,23 @@ export const calcularEstadisticas = (lista) => {
     dificultades: {}
   });
 
-  return {
-    total: lista.length,
-    ...stats,
+  const formatearDatos = (diccionario) => {
+    const resultado = {};
+
+    Object.entries(diccionario).forEach(([key, count]) => {
+      const porcentaje = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+      resultado[key] = {
+        cantidad: count,
+        porcentaje: `${porcentaje}%`
+      };
+    });
+    return resultado;
   };
+
+  return{
+    total,
+    porEstado: formatearDatos(conteos.estados),
+    porDificultad: formatearDatos(conteos.dificultades)
+  };
+
 };

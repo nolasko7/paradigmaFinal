@@ -22,7 +22,8 @@ import {
 // LÓGICO (Reglas e Inferencias)
 import {
   encontrarTareasVencidas,
-  encontrarTareasPrioritarias
+  encontrarTareasPrioritarias,
+  encontrarTareasRelacionadas
 } from './LogicaTareas.js';
 
 // --- Configuración del archivo ---
@@ -214,7 +215,7 @@ function casoReportes() {
   switch(opcion) {
     case '1':
       const stats = calcularEstadisticas(activas);
-      Menu.displayStatistics({ ...stats, totalActivas: activas.length, porEstado: stats.estados, porDificultad: stats.dificultades });
+      Menu.displayStatistics(stats);
       break;
     case '2':
       const vencidas = encontrarTareasVencidas(activas);
