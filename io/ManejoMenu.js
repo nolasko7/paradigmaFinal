@@ -46,12 +46,7 @@ export const displayTaskList = (tasks) =>{
     }
     //busca 1x1 y muestra
     tasks.forEach((task) =>{
-        const vencimiento = task.estaVencida() ? `(TAREA VENCIDA)` : '';
-        //padEnd & padFirst sirve para rellenar el string con caracteres del tamaño seteado 
-        const estado = `[${task.estado}]`.padEnd(12);
-        const difTexto = EMOJIS_DIFICULTAD[task.dificultad] || `[${task.dificultad}]`;
-        console.log(`\n${estado} \n${difTexto} \n${task.titulo} \n${vencimiento}`);
-        console.log(`\n ID = ${task.id}`)
+        displayTaskDetails(task);
     });
 };
 
@@ -64,9 +59,9 @@ export const displayTaskDetails = (task) => {
     console.log(`  Descripción:  ${task.descripcion || '(Sin descripción)'}`);
     console.log(`  Estado:       ${task.estado}`);
     console.log(`  Dificultad:   ${task.dificultad}`);
-    console.log(`  Creación:     ${task.creacion.toISOString()}`);
-    console.log(`  Últ. Edición: ${task.ultimaEdicion.toISOString()}`);
-    console.log(`  Vencimiento:  ${task.vencimiento ? task.vencimiento.toISOString() : '(Sin fecha)'}`);
+    console.log(`  Creación:     ${task.creacion.toISOString().split('T')[0]}`);
+    console.log(`  Últ. Edición: ${task.ultimaEdicion.toISOString().split('T')[0]}`);
+    console.log(`  Vencimiento:  ${task.vencimiento ? task.vencimiento.toISOString().split('T')[0] : '(Sin fecha)'}`);
     console.log(`  ¿Vencida?:    ${task.estaVencida() ? 'Sí' : 'No'}`);
     console.log(`  ¿Eliminada?:  ${task.eliminado ? 'Sí' : 'No'}`); // Usamos la propiedad 'eliminado' por si hay un soft delete sobre esa tarea
     console.log("------------------------------");

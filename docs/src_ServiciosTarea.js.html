@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/ServiciosTarea.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/ServiciosTarea.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Módulo de Servicios de Tareas (Paradigma Funcional).
+ * * Este módulo contiene funciones puras para consultar y transformar
+ * listas de tareas. No muta los datos de entrada y no tiene
+ * efectos secundarios.
+ * * Cumple:
+ * - Funciones Puras (100% de este módulo).
+ * - Inmutabilidad (siempre devuelve nuevas listas).
+ * - Uso de HOFs (map, filter, reduce, sort) en lugar de bucles.
+ * - Dependencias inyectadas (import).
+ */
+
+import { DIFICULTADES, DIFICULTADES_ORDEN, ESTADOS } from '../utils/constantes.js';
+
+/**
+ * [FUNCIÓN PURA - HOF]
+ * Filtra la lista principal para devolver solo las tareas activas
+ * (no marcadas como eliminadas por soft delete).
+ * Esta es una HOF de utilidad que puede componerse con otras.
+ * @param {Array&lt;Tarea>} lista - La lista completa de tareas.
+ * @returns {Array&lt;Tarea>} Una NUEVA lista solo con tareas activas.
+ */
+export const filtrarTareasActivas = (lista) => {
+  return lista.filter(t => !t.eliminado);
+};
+
+/**
+ * [FUNCIÓN PURA - HOF]
+ * Busca tareas por un término en el título.
+ * @param {Array&lt;Tarea>} lista - La lista de tareas (usualmente ya filtrada por activas).
+ * @param {string} titulo - El texto a buscar.
+ * @returns {Array&lt;Tarea>} Una NUEVA lista con las tareas que coinciden.
+ */
+export const buscarPorTitulo = (lista, titulo) => {
+  if (!titulo) {
+    return [...lista]; // Devuelve una copia si no hay término
+  }
+  const t = titulo.toLowerCase();
+  return lista.filter(tarea => tarea.titulo.toLowerCase().includes(t));
+};
+
+/**
+ * [FUNCIÓN PURA - HOF]
+ * Filtra tareas por un estado específico.
+ * @param {Array&lt;Tarea>} lista - La lista de tareas.
+ * @param {string} estado - El estado a filtrar.
+ * @returns {Array&lt;Tarea>} Una NUEVA lista con las tareas de ese estado.
+ */
+export const filtrarPorEstado = (lista, estado) => {
+  return lista.filter(t => t.estado === estado);
+};
+
+/**
+ * [FUNCIÓN PURA - HOF]
+ * Ordena una lista de tareas por un criterio.
+ * @param {Array&lt;Tarea>} lista - La lista a ordenar.
+ * @param {'titulo' | 'vencimiento' | 'creacion' | 'dificultad'} criterio - Criterio de orden.
+ * @returns {Array&lt;Tarea>} Una NUEVA lista ordenada.
+ */
+export const ordenarTareasPor = (lista, criterio) => {
+  // Usamos [...] para crear una copia y no mutar
+  // el array original, ya que .sort() es mutable por defecto.
+  const copia = [...lista];
+
+  switch (criterio) {
+    case 'titulo':
+      // localeCompare es ideal para ordenar texto
+      return copia.sort((a, b) => a.titulo.localeCompare(b.titulo));
+    
+    case 'vencimiento':
+      // Maneja tareas con y sin fecha de vencimiento
+      return copia.sort((a, b) => {
+        if (!a.vencimiento) return 1; // Tareas sin fecha van al final
+        if (!b.vencimiento) return -1; // Tareas sin fecha van al final
+        return a.vencimiento - b.vencimiento; // Ordena por fecha
+      });
+
+    case 'creacion':
+      // Ordena por fecha de creación (ascendente)
+      return copia.sort((a, b) => a.creacion - b.creacion);
+
+    case 'dificultad':
+      // Usa el mapa de orden importado de constantes.js
+      return copia.sort((a, b) => {
+        const ordenA = DIFICULTADES_ORDEN[a.dificultad] || 0;
+        const ordenB = DIFICULTADES_ORDEN[b.dificultad] || 0;
+        return ordenA - ordenB;
+      });
+
+    default:
+      return copia; // Devuelve la copia sin ordenar si el criterio es inválido
+  }
+};
+
+/**
+ * [FUNCIÓN PURA - HOF]
+ * Calcula estadísticas sobre la lista de tareas.
+ * @param {Array&lt;Tarea>} lista - La lista de tareas.
+ * @returns {object} Un objeto con las estadísticas.
+ */
+export const calcularEstadisticas = (lista) => {
+  // .reduce() es la HOF perfecta para agregar una lista a un solo objeto
+  const total = lista.length;
+  // Reduccion para contar
+  const conteos = lista.reduce((acumulador, tarea) => {
+    // Conteo por estado
+    const estado = tarea.estado;
+    acumulador.estados[estado] = (acumulador.estados[estado] || 0) + 1;
+
+    // Conteo por dificultad
+    const dificultad = tarea.dificultad;
+    acumulador.dificultades[dificultad] = (acumulador.dificultades[dificultad] || 0) + 1;
+
+    return acumulador;
+  }, {
+    // Valor inicial del acumulador
+    estados: {},
+    dificultades: {}
+  });
+
+  const formatearDatos = (diccionario) => {
+    const resultado = {};
+
+    Object.entries(diccionario).forEach(([key, count]) => {
+      const porcentaje = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+      resultado[key] = {
+        cantidad: count,
+        porcentaje: `${porcentaje}%`
+      };
+    });
+    return resultado;
+  };
+
+  return{
+    total,
+    porEstado: formatearDatos(conteos.estados),
+    porDificultad: formatearDatos(conteos.dificultades)
+  };
+
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#DIFICULTADES_ORDEN">DIFICULTADES_ORDEN</a></li><li><a href="global.html#EMOJIS_DIFICULTAD">EMOJIS_DIFICULTAD</a></li><li><a href="global.html#Tarea">Tarea</a></li><li><a href="global.html#_solicitarStringNoVacio">_solicitarStringNoVacio</a></li><li><a href="global.html#_solicitarStringOpcional">_solicitarStringOpcional</a></li><li><a href="global.html#buscarPorTitulo">buscarPorTitulo</a></li><li><a href="global.html#calcularEstadisticas">calcularEstadisticas</a></li><li><a href="global.html#cargarTareas">cargarTareas</a></li><li><a href="global.html#casoCrearTarea">casoCrearTarea</a></li><li><a href="global.html#casoEliminarTarea">casoEliminarTarea</a></li><li><a href="global.html#casoListarTareasDetalle">casoListarTareasDetalle</a></li><li><a href="global.html#casoModificarTarea">casoModificarTarea</a></li><li><a href="global.html#casoOrdenarTareas">casoOrdenarTareas</a></li><li><a href="global.html#casoReportes">casoReportes</a></li><li><a href="global.html#displayStatistics">displayStatistics</a></li><li><a href="global.html#displayTaskDetails">displayTaskDetails</a></li><li><a href="global.html#displayTaskList">displayTaskList</a></li><li><a href="global.html#encontrarTareasPrioritarias">encontrarTareasPrioritarias</a></li><li><a href="global.html#encontrarTareasVencidas">encontrarTareasVencidas</a></li><li><a href="global.html#esPrioritaria">esPrioritaria</a></li><li><a href="global.html#estaVencida">estaVencida</a></li><li><a href="global.html#filtrarPorEstado">filtrarPorEstado</a></li><li><a href="global.html#filtrarTareasActivas">filtrarTareasActivas</a></li><li><a href="global.html#guardarTareas">guardarTareas</a></li><li><a href="global.html#iniciar">iniciar</a></li><li><a href="global.html#logError">logError</a></li><li><a href="global.html#logInfo">logInfo</a></li><li><a href="global.html#ordenarTareasPor">ordenarTareasPor</a></li><li><a href="global.html#pressEnterToContinue">pressEnterToContinue</a></li><li><a href="global.html#seleccionarTareaDeLista">seleccionarTareaDeLista</a></li><li><a href="global.html#solicitarCriterioOrden">solicitarCriterioOrden</a></li><li><a href="global.html#solicitarDificultad">solicitarDificultad</a></li><li><a href="global.html#solicitarEstado">solicitarEstado</a></li><li><a href="global.html#solicitarOpcionMenu">solicitarOpcionMenu</a></li><li><a href="global.html#solicitarPropsCreacion">solicitarPropsCreacion</a></li><li><a href="global.html#solicitarPropsModificacion">solicitarPropsModificacion</a></li><li><a href="global.html#solicitarTerminoBusqueda">solicitarTerminoBusqueda</a></li><li><a href="global.html#solicitarVencimiento">solicitarVencimiento</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Nov 25 2025 17:13:53 GMT-0300 (Argentina Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

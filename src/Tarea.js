@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'; // Para el ID nico
 // Importamos las constantes desde el nuevo archivo
-import { ESTADOS, DIFICULTADES } from './constantes.js';
+import { ESTADOS, DIFICULTADES } from '../utils/constantes.js';
 
 /**
  * Constructor de la entidad Tarea (Paradigma OOP).
@@ -70,7 +70,6 @@ Tarea.prototype.modificar = function(cambios) {
   }
 
   this.ultimaEdicion = new Date();
-  console.log(`Tarea [${this.id.substring(0, 6)}] modificada.`);
 };
 
 /**
@@ -80,7 +79,6 @@ Tarea.prototype.modificar = function(cambios) {
 Tarea.prototype.marcarEliminada = function() {
   this.eliminado = true;
   this.ultimaEdicion = new Date();
-  console.log(`Tarea [${this.id.substring(0, 6)}] marcada como eliminada.`);
 };
 
 /**

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: io/ManejoInput.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: io/ManejoInput.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import promptSync from 'prompt-sync';
+import { ESTADOS, DIFICULTADES, getHoy } from '../utils/constantes.js';
+import { Tarea } from '../src/Tarea.js'; // Para JSDoc
+
+const prompt = promptSync({ sigint: true });
+
+// pide un string no vacio para poder empezar a trabajar
+/**
+ * @param {string} mensaje 
+ * @param {number} [max=100]
+ * @returns {string | null} El string, o null si se cancela.
+ */
+const _solicitarStringNoVacio = (mensaje, max = 100) => {
+    let valor;
+    do {
+        valor = prompt(mensaje);
+        if (valor === null){
+            return null; // El usuario presiono Ctrl+C
+        }
+        if (valor.trim().length === 0) {
+            console.log("❌ Error: La entrada no puede estar vacía.");
+        } else if (valor.length > max) {
+            console.log(`❌ Error: La entrada no puede exceder los ${max} caracteres.`);
+        }
+    } while (valor.trim().length === 0 || valor.length > max);
+    return valor.trim();
+};
+
+// pide un string opcional.
+/**
+ * @param {string} mensaje 
+ * @param {number} [max=500]
+ * @returns {string | null} El string, o null si se cancela.
+ */
+const _solicitarStringOpcional = (mensaje, max = 500) => {
+    let valor;
+    do {
+        valor = prompt(mensaje);
+        if (valor === null) {
+            return null;
+        }
+        if (valor.length > max) {
+            console.log(`❌ Error: La entrada no puede exceder los ${max} caracteres.`);
+        }
+    } while (valor.length > max);
+    return valor;
+};
+
+/**
+ * Pide una fecha de vencimiento.
+ * Si el usuario presiona Enter sin escribir nada, retorna null.
+ * Si escribe una fecha válida, retorna el objeto Date.
+ * * @param {string} mensaje
+ * @returns {Date | null}
+ */
+export const solicitarVencimiento = (mensaje) => {
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    const hoy = new Date();
+
+    while (true) {
+        // Mostramos el mensaje indicando que puede omitir
+        const input = prompt(`${mensaje} `);
+
+        // CASO 1: Si cancela o da Enter vacío -> Retorna NULL
+        if (input === null || input.trim() === '') {
+            return undefined;
+        }
+
+        const fechaStr = input.trim();
+
+        // Validación de Formato (Regex)
+        if (!regexFecha.test(fechaStr)) {
+            console.log("❌ Error: Formato incorrecto. Usa AAAA-MM-DD");
+            continue; // Vuelve a pedir
+        }
+
+        // Validación de Fecha Real
+        const fechaInput = new Date(fechaStr);
+
+        if (isNaN(fechaInput.getTime())) {
+            console.log("❌ Error: Fecha inválida (revisa el día o mes).");
+            continue;
+        }
+
+        // Validacion de Pasado
+        if (fechaInput &lt; hoy) {
+            console.log("❌ Error: La fecha de vencimiento no puede ser anterior a hoy.");
+            continue;
+        }
+
+        // Si pasó todas las validaciones, retornamos el objeto Date
+        return fechaInput;
+    }
+};
+
+
+// solicita las propiedades para crear una nueva Tarea.
+/**
+ * 
+ * @returns {object | null} Un objeto de props, o null si se cancela.
+ */
+export const solicitarPropsCreacion = () => {
+    console.clear();
+    console.log("--- 1. Nueva Tarea ---");
+    
+    const titulo = _solicitarStringNoVacio("Titulo: ");
+    
+    if (titulo === null){
+        return null;
+    }
+    
+    const descripcion = _solicitarStringOpcional("Descripcion (opcional): ");
+    
+    if (descripcion === null){
+        return null;
+    }
+    const props = { titulo, descripcion };
+    
+    const dificultad = solicitarDificultad("Dificultad (ENTER = FACIL): ", DIFICULTADES.FACIL, true);
+    if (dificultad === null) return null; // Cancelar
+    if (dificultad) props.dificultad = dificultad;
+
+    const vencimiento = solicitarVencimiento("Vencimiento (AAAA-MM-DD). ENTER SI DESEA OMITIR");
+
+    props.vencimiento = vencimiento;
+    
+    return props;
+};
+
+/**
+ * Pide al usuario que seleccione una tarea de una lista.
+ * @param {Array&lt;Tarea>} lista - La lista de tareas para elegir.
+ * @param {string} accion - El verbo (ej: "modificar", "eliminar").
+ * @returns {Tarea | null} La tarea seleccionada, o null si se cancela.
+ */
+export const seleccionarTareaDeLista = (lista, accion) => {
+    if (lista.length === 0) {
+        console.log("❌ No se encontraron tareas que coincidan.");
+        return null;
+    }
+
+    if (lista.length === 1) {
+        console.log(`ℹ️ Se encontro 1 tarea: ${lista[0].titulo}`);
+        return lista[0];
+    }
+
+    console.log(`ℹ️ Se encontraron ${lista.length} tareas. Cual desea ${accion}?`);
+    lista.forEach((tarea, index) => {
+        console.log(`  [${index + 1}] ${tarea.titulo} [${tarea.estado}]`);
+    });
+
+    let eleccion;
+    do {
+        const input = prompt(`Seleccione un número (1-${lista.length}) o 0 para cancelar: `);
+        if (input === null) return null;
+        if (input === '0') return null;
+        
+        eleccion = parseInt(input);
+        
+    } while (isNaN(eleccion) || eleccion &lt; 1 || eleccion > lista.length);
+    
+    return lista[eleccion - 1];
+};
+
+/**
+ * Pide al usuario los campos para modificar una tarea.
+ * @param {Tarea} tarea - La tarea que se esta modificando.
+ * @returns {object | null} Un objeto con los cambios, o null si no se cambio nada.
+ */
+export const solicitarPropsModificacion = (tarea) => {
+    console.clear();
+    console.log("--- 3. Modificar Tarea ---");
+    console.log("(Deje en blanco para no cambiar el valor)");
+
+    const cambios = {};
+
+    // 1. Título
+    const titulo = _solicitarStringOpcional(`Título [${tarea.titulo}]: `, 100);
+    if (titulo === null) return null; // Cancelar
+    if (titulo) cambios.titulo = titulo;
+
+    // 2. Descripcion
+    const desc = _solicitarStringOpcional(`Descripcion [${tarea.descripcion || 'N/A'}]: `, 500);
+    if (desc === null) return null;
+    if (desc) cambios.descripcion = desc;
+
+    // 3. Estado
+    const estado = solicitarEstado(`Estado [${tarea.estado}]: `, tarea.estado, true);
+    if (estado === null) return null;
+    if (estado) cambios.estado = estado;
+
+    // 4. Dificultad
+    const dificultad = solicitarDificultad(`Dificultad [${tarea.dificultad}]: `, tarea.dificultad, true);
+    if (dificultad === null) return null;
+    if (dificultad) cambios.dificultad = dificultad;
+
+    // 5. Vencimiento
+    // Formateamos la fecha actual para mostrarla en el prompt
+    const vencimientoActual = tarea.vencimiento 
+        ? new Date(tarea.vencimiento).toISOString().split('T')[0] 
+        : 'Sin fecha';
+    
+    // Reutilizamos la función que creaste. Si el usuario da Enter vacío, retorna null.
+    const nuevaFecha = solicitarVencimiento(`Vencimiento [${vencimientoActual}]`);
+
+    // Si retorna una fecha válida (no es null), la agregamos a los cambios.
+    if (nuevaFecha !== null) {
+        cambios.vencimiento = nuevaFecha;
+    }
+
+    // Verificamos si hubo algún cambio
+    if (Object.keys(cambios).length === 0) {
+        return null; // No hubo cambios
+    }
+    
+    return cambios;
+};
+
+/**
+ * Pide un término de búsqueda al usuario.
+ * @returns {string} (Vacío si no se ingresa nada)
+ */
+export const solicitarTerminoBusqueda = () => {
+    const termino = prompt("Ingrese término de búsqueda (Enter para ver todas): ");
+    return termino === null ? '' : termino.trim();
+};
+
+/**
+ * Pide un criterio de orden al usuario.
+ * @returns {string | null}
+ */
+export const solicitarCriterioOrden = () => {
+    console.log("\nComo desea ordenar las tareas?");
+    console.log("  [1] Por Título (A-Z)");
+    console.log("  [2] Por Fecha de Creacion (Mas antiguas primero)");
+    console.log("  [3] Por Fecha de Vencimiento");
+    console.log("  [4] Por Dificultad (Facil > Difícil)");
+    console.log("  [Enter] Sin orden específico");
+    
+    const input = prompt("Seleccione una opcion: ");
+    if (input === null) return null;
+    switch(input) {
+        case '1': return 'titulo';
+        case '2': return 'creacion';
+        case '3': return 'vencimiento';
+        case '4': return 'dificultad';
+        default: return null;
+    }
+};
+
+/**
+ * Pide un estado al usuario (para modificar).
+ * @param {string} mensaje - El mensaje del prompt.
+ * @param {string} [defaultVal] - Valor por defecto.
+ * @param {boolean} [opcional=false] - Si es true, Enter no cambia el valor.
+ * @returns {string | undefined} El estado seleccionado, o undefined si no se cambia.
+ */
+export const solicitarEstado = (mensaje, defaultVal, opcional = false) => {
+    console.log(mensaje);
+    console.log(`  [1] ${ESTADOS.PENDIENTE}`);
+    console.log(`  [2] ${ESTADOS.EN_CURSO}`);
+    console.log(`  [3] ${ESTADOS.TERMINADA}`);
+    console.log(`  [4] ${ESTADOS.CANCELADA}`);
+    
+    const input = prompt("Seleccione: ");
+    if (input === null) return null; // Cancelar
+    if (opcional &amp;&amp; input === '') return undefined;
+
+    switch(input) {
+        case '1': return ESTADOS.PENDIENTE;
+        case '2': return ESTADOS.EN_CURSO;
+        case '3': return ESTADOS.TERMINADA;
+        case '4': return ESTADOS.CANCELADA;
+        default: return defaultVal || ESTADOS.PENDIENTE; // Default si es obligatorio
+    }
+};
+
+/**
+ * Pide una dificultad al usuario.
+ * @param {string} mensaje - El mensaje del prompt.
+ * @param {string} [defaultVal] - Valor por defecto.
+ * @param {boolean} [opcional=false] - Si es true, Enter no cambia el valor.
+ * @returns {string | undefined} La dificultad seleccionada, o undefined si no se cambia.
+ */
+export const solicitarDificultad = (mensaje, defaultVal, opcional = false) => {
+    console.log(mensaje);
+    console.log(`  [1] ${DIFICULTADES.FACIL}`);
+    console.log(`  [2] ${DIFICULTADES.MEDIA}`);
+    console.log(`  [3] ${DIFICULTADES.DIFICIL}`);  
+    
+    const input = prompt("Seleccione: ");
+    if (input === null) return null; // Cancelar
+    if (opcional &amp;&amp; input === '') return undefined;
+
+    switch(input) {
+        case '1': return DIFICULTADES.FACIL;
+        case '2': return DIFICULTADES.MEDIA;
+        case '3': return DIFICULTADES.DIFICIL;
+        default: return defaultVal || DIFICULTADES.FACIL;
+    }
+};
+
+/**
+ * Pide al usuario que presione Enter para continuar.
+ * (Funcion impura de I/O)
+ */
+export const pressEnterToContinue = () => {
+    prompt("\nPresione ENTER para volver al menú...");
+};
+
+/**
+ * Pide una opcion del menú principal.
+ * @returns {string}
+ */
+export const solicitarOpcionMenu = () => {
+    const opcion = prompt("Selecciona una opcion: ");
+    return opcion === null ? '0' : opcion; // Salir si presiona Ctrl+C
+};
+
+
+export const esperarAccionEnDetalle = () => {
+    console.log("\nAcciones disponibles:");
+    console.log("  [1] Modificar Tarea");
+    console.log("  [2] Eliminar Tarea");
+    console.log("  [Enter] Volver al menú principal");
+    let accion;
+    do{
+        const input = prompt("Seleccione una opcion: ");
+        if (input === null || input === '') {
+            return 0; // Volver al menu
+        }
+        accion = input.toUpperCase();
+    } while (accion !== '1' &amp;&amp; accion !== '2');
+    return accion;
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#DIFICULTADES_ORDEN">DIFICULTADES_ORDEN</a></li><li><a href="global.html#EMOJIS_DIFICULTAD">EMOJIS_DIFICULTAD</a></li><li><a href="global.html#Tarea">Tarea</a></li><li><a href="global.html#_solicitarStringNoVacio">_solicitarStringNoVacio</a></li><li><a href="global.html#_solicitarStringOpcional">_solicitarStringOpcional</a></li><li><a href="global.html#buscarPorTitulo">buscarPorTitulo</a></li><li><a href="global.html#calcularEstadisticas">calcularEstadisticas</a></li><li><a href="global.html#cargarTareas">cargarTareas</a></li><li><a href="global.html#casoCrearTarea">casoCrearTarea</a></li><li><a href="global.html#casoEliminarTarea">casoEliminarTarea</a></li><li><a href="global.html#casoListarTareasDetalle">casoListarTareasDetalle</a></li><li><a href="global.html#casoModificarTarea">casoModificarTarea</a></li><li><a href="global.html#casoOrdenarTareas">casoOrdenarTareas</a></li><li><a href="global.html#casoReportes">casoReportes</a></li><li><a href="global.html#displayStatistics">displayStatistics</a></li><li><a href="global.html#displayTaskDetails">displayTaskDetails</a></li><li><a href="global.html#displayTaskList">displayTaskList</a></li><li><a href="global.html#encontrarTareasPrioritarias">encontrarTareasPrioritarias</a></li><li><a href="global.html#encontrarTareasVencidas">encontrarTareasVencidas</a></li><li><a href="global.html#esPrioritaria">esPrioritaria</a></li><li><a href="global.html#estaVencida">estaVencida</a></li><li><a href="global.html#filtrarPorEstado">filtrarPorEstado</a></li><li><a href="global.html#filtrarTareasActivas">filtrarTareasActivas</a></li><li><a href="global.html#guardarTareas">guardarTareas</a></li><li><a href="global.html#iniciar">iniciar</a></li><li><a href="global.html#logError">logError</a></li><li><a href="global.html#logInfo">logInfo</a></li><li><a href="global.html#ordenarTareasPor">ordenarTareasPor</a></li><li><a href="global.html#pressEnterToContinue">pressEnterToContinue</a></li><li><a href="global.html#seleccionarTareaDeLista">seleccionarTareaDeLista</a></li><li><a href="global.html#solicitarCriterioOrden">solicitarCriterioOrden</a></li><li><a href="global.html#solicitarDificultad">solicitarDificultad</a></li><li><a href="global.html#solicitarEstado">solicitarEstado</a></li><li><a href="global.html#solicitarOpcionMenu">solicitarOpcionMenu</a></li><li><a href="global.html#solicitarPropsCreacion">solicitarPropsCreacion</a></li><li><a href="global.html#solicitarPropsModificacion">solicitarPropsModificacion</a></li><li><a href="global.html#solicitarTerminoBusqueda">solicitarTerminoBusqueda</a></li><li><a href="global.html#solicitarVencimiento">solicitarVencimiento</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Nov 25 2025 17:13:53 GMT-0300 (Argentina Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

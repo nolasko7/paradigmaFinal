@@ -53,7 +53,7 @@ export const encontrarTareasRelacionadas = (lista, tareaObjetivo) => {
   return lista.filter(t => 
     t.id !== tareaObjetivo.id && //No es ella misma
     !t.eliminado && //No esta eliminada
-    t.dificultad === tareaObjetivo.difulcultad) //Misma dificultad
+    t.dificultad === tareaObjetivo.dificultad) //Misma dificultad
 }
 
 

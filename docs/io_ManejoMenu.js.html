@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: io/ManejoMenu.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: io/ManejoMenu.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import {Tarea} from '../src/Tarea.js'
+import { DIFICULTADES } from '../utils/constantes.js';
+// FUnciones de feedback para el usuario
+/**@param {string} message */
+
+const EMOJIS_DIFICULTAD = {
+    [DIFICULTADES.FACIL]: '🟢 (Facil)',
+    [DIFICULTADES.MEDIA]: '🟡 (Media)',
+    [DIFICULTADES.DIFICIL]: '🔴 (Dificil)',
+}
+
+export const logSuccess = (message) =>{
+    console.log(`✅ ${message}`);
+}
+/**@param {string} message */
+export const logError = (message) =>{
+    console.log(`❌ ${message}`);
+}
+/**@param {string} message */
+export const logInfo = (message) =>{
+    console.log(`ℹ️ ${message}`)
+}
+
+//Funciones de visualizacion 
+export const displayMenu = () =>{
+    console.clear();
+    console.log("======================================");
+    console.log("   Gestor de Tareas (Multi-Paradigma) ");
+    console.log("======================================");
+    console.log("1. Crear Tarea");
+    console.log("2. Listar Tareas en detalle");
+    console.log("3. Actualizar Tarea");
+    console.log("4. Eliminar Tarea");
+    console.log("5. Buscar u Ordenar Tareas");
+    console.log("6. Ver Reportes y Estadísticas");
+    console.log("0. Salir");
+    console.log("--------------------------------------");
+}
+
+//Listar tareas de forma resumida
+/** @param {Array&lt;Tarea>} tasks */
+export const displayTaskList = (tasks) =>{
+    if (tasks.length === 0){
+        console.log("No hay tareas para mostrar");
+        return;
+    }
+    //busca 1x1 y muestra
+    tasks.forEach((task) =>{
+        displayTaskDetails(task);
+    });
+};
+
+//Muestra todos los detalles de la tarea seleccionada, solo 1
+/**@param {Tarea} Task */
+export const displayTaskDetails = (task) => {
+    console.log("\n--- Detalles de la Tarea ---");
+    console.log(`  ID:           ${task.id}`);
+    console.log(`  Título:       ${task.titulo}`);
+    console.log(`  Descripción:  ${task.descripcion || '(Sin descripción)'}`);
+    console.log(`  Estado:       ${task.estado}`);
+    console.log(`  Dificultad:   ${task.dificultad}`);
+    console.log(`  Creación:     ${task.creacion.toISOString().split('T')[0]}`);
+    console.log(`  Últ. Edición: ${task.ultimaEdicion.toISOString().split('T')[0]}`);
+    console.log(`  Vencimiento:  ${task.vencimiento ? task.vencimiento.toISOString().split('T')[0] : '(Sin fecha)'}`);
+    console.log(`  ¿Vencida?:    ${task.estaVencida() ? 'Sí' : 'No'}`);
+    console.log(`  ¿Eliminada?:  ${task.eliminado ? 'Sí' : 'No'}`); // Usamos la propiedad 'eliminado' por si hay un soft delete sobre esa tarea
+    console.log("------------------------------");
+}
+
+//reportes de estadisticas
+/** @param {object} stats */
+export const displayStatistics = (stats) =>{
+    console.log("--- Estadisticas de tareas ---");
+    console.log(`Total de tareas activas: ${stats.total}\n`);
+    if (stats.total > 0) {
+        console.log("Tareas por estado: ");
+    
+        Object.entries(stats.porEstado).forEach(([estado, data]) =>{
+            console.log(` - ${estado}: ${data.cantidad} (${data.porcentaje}%)`);
+        });
+
+        console.log("\nTareas por dificultad: ");
+        Object.entries(stats.porDificultad).forEach(([dificultad, data]) =>{
+            const label = EMOJIS_DIFICULTAD[dificultad] || dificultad;
+            console.log(` - ${label}: ${data.cantidad} (${data.porcentaje}%)`);
+        });
+    } else {
+        console.log("No hay tareas para mostrar estadísticas.");
+    }
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#DIFICULTADES_ORDEN">DIFICULTADES_ORDEN</a></li><li><a href="global.html#EMOJIS_DIFICULTAD">EMOJIS_DIFICULTAD</a></li><li><a href="global.html#Tarea">Tarea</a></li><li><a href="global.html#_solicitarStringNoVacio">_solicitarStringNoVacio</a></li><li><a href="global.html#_solicitarStringOpcional">_solicitarStringOpcional</a></li><li><a href="global.html#buscarPorTitulo">buscarPorTitulo</a></li><li><a href="global.html#calcularEstadisticas">calcularEstadisticas</a></li><li><a href="global.html#cargarTareas">cargarTareas</a></li><li><a href="global.html#casoCrearTarea">casoCrearTarea</a></li><li><a href="global.html#casoEliminarTarea">casoEliminarTarea</a></li><li><a href="global.html#casoListarTareasDetalle">casoListarTareasDetalle</a></li><li><a href="global.html#casoModificarTarea">casoModificarTarea</a></li><li><a href="global.html#casoOrdenarTareas">casoOrdenarTareas</a></li><li><a href="global.html#casoReportes">casoReportes</a></li><li><a href="global.html#displayStatistics">displayStatistics</a></li><li><a href="global.html#displayTaskDetails">displayTaskDetails</a></li><li><a href="global.html#displayTaskList">displayTaskList</a></li><li><a href="global.html#encontrarTareasPrioritarias">encontrarTareasPrioritarias</a></li><li><a href="global.html#encontrarTareasVencidas">encontrarTareasVencidas</a></li><li><a href="global.html#esPrioritaria">esPrioritaria</a></li><li><a href="global.html#estaVencida">estaVencida</a></li><li><a href="global.html#filtrarPorEstado">filtrarPorEstado</a></li><li><a href="global.html#filtrarTareasActivas">filtrarTareasActivas</a></li><li><a href="global.html#guardarTareas">guardarTareas</a></li><li><a href="global.html#iniciar">iniciar</a></li><li><a href="global.html#logError">logError</a></li><li><a href="global.html#logInfo">logInfo</a></li><li><a href="global.html#ordenarTareasPor">ordenarTareasPor</a></li><li><a href="global.html#pressEnterToContinue">pressEnterToContinue</a></li><li><a href="global.html#seleccionarTareaDeLista">seleccionarTareaDeLista</a></li><li><a href="global.html#solicitarCriterioOrden">solicitarCriterioOrden</a></li><li><a href="global.html#solicitarDificultad">solicitarDificultad</a></li><li><a href="global.html#solicitarEstado">solicitarEstado</a></li><li><a href="global.html#solicitarOpcionMenu">solicitarOpcionMenu</a></li><li><a href="global.html#solicitarPropsCreacion">solicitarPropsCreacion</a></li><li><a href="global.html#solicitarPropsModificacion">solicitarPropsModificacion</a></li><li><a href="global.html#solicitarTerminoBusqueda">solicitarTerminoBusqueda</a></li><li><a href="global.html#solicitarVencimiento">solicitarVencimiento</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Nov 25 2025 17:13:53 GMT-0300 (Argentina Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

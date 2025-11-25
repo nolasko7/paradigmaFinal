@@ -27,7 +27,7 @@ import {
 } from './LogicaTareas.js';
 
 // --- Configuración del archivo ---
-const RUTA_BD = '../data/tareas.json';
+const RUTA_BD = './data/tareas.json';
 
 // --- Estado de la Aplicación ---
 // Esta es la "Base de Hechos" que leeremos desde la BD
@@ -108,13 +108,13 @@ function casoModificarTarea() {
   const activas = filtrarTareasActivas(estadoApp);
   const termino = Inputs.solicitarTerminoBusqueda();
   const encontradas = buscarPorTitulo(activas, termino);
-  const tarea = Inputs.seleccionarTareaDeLista(encontradas, 'modificar'); // aca nico laburate eso, supongo q es cuando encuentra muchas tareas, le pregunta al usuario cual desea modificar.
+  const tarea = Inputs.seleccionarTareaDeLista(encontradas, 'modificar');
+  
   
   if (!tarea) {
-    Menu.logInfo('No existen tareas con ese titulo.');
     return;
   }
-  
+
   Menu.displayTaskDetails(tarea);
   
   const cambios = Inputs.solicitarPropsModificacion(tarea);
@@ -138,10 +138,9 @@ function casoEliminarTarea() {
   const activas = filtrarTareasActivas(estadoApp);
   const termino = Inputs.solicitarTerminoBusqueda();
   const encontradas = buscarPorTitulo(activas, termino);
-  const tarea = Inputs.seleccionarTareaDeLista(encontradas, 'eliminar'); // aca lo mismo que en modificar.
+  const tarea = Inputs.seleccionarTareaDeLista(encontradas, 'eliminar');
   
   if (!tarea) {
-    Menu.logInfo('No existen tareas con ese titulo.');
     return;
   }
   
@@ -157,14 +156,37 @@ function casoListarTareasDetalle() {
   console.clear();
   Menu.logInfo("--- 2. Listar Tareas en Detalle ---");
 
-  // filtra las tareas activas (Funcional)
+  console.log("Filtros disponibles: ");
+  console.log(" [1] Todas las Tareas");
+  console.log(" [2] Solo Tareas PENDIENTES");
+  console.log(" [3] Solo Tareas EN CURSO");
+  console.log(" [4] Solo Tareas COMPLETADAS");
+  const opcion = Inputs.solicitarOpcionMenu();
+
   const activas = filtrarTareasActivas(estadoApp);
-  if (activas.length === 0) {
-    Menu.logInfo("No hay tareas activas para mostrar.");
+  let aMostrar = activas;
+
+  switch(opcion) {
+    case '1': break; // Todas
+    case '2':
+      aMostrar = filtrarPorEstado(activas, ESTADOS.PENDIENTE);
+    break;
+    case '3':
+      aMostrar = filtrarPorEstado(activas, ESTADOS.EN_CURSO);
+    break;
+    case '4':
+      aMostrar = filtrarPorEstado(activas, ESTADOS.TERMINADA);
+    break;
+    default:
+      Menu.logInfo("Opción de filtro no válida. Mostrando todas las tareas.");
+  }
+
+  if (aMostrar.length === 0) {
+    Menu.logInfo("No hay tareas para mostrar con el filtro seleccionado.");
     return;
   }
-  
-  activas.forEach(Menu.displayTaskDetails);
+
+  Menu.displayTaskList(aMostrar);
 }
 
 
@@ -210,7 +232,7 @@ function casoReportes() {
   console.log(" [1] Estadísticas Generales");
   console.log(" [2] Reporte: Tareas VENCIDAS");
   console.log(" [3] Reporte: Tareas PRIORITARIAS");
-  const opcion = prompt("Seleccione reporte: ");
+  const opcion = Inputs.solicitarOpcionMenu();
 
   switch(opcion) {
     case '1':
@@ -241,7 +263,7 @@ function iniciar() {
 
   while (continuar) {
     Menu.displayMenu(); 
-    const opcion = prompt('Seleccione una opción: ');
+    const opcion = Inputs.solicitarOpcionMenu();
     
     switch (opcion) {
       case '1': casoCrearTarea(); break;
@@ -259,7 +281,7 @@ function iniciar() {
     }
     
     if (continuar) {
-      prompt('\nPresione ENTER para continuar...');
+      Inputs.pressEnterToContinue();
     }
   }
 

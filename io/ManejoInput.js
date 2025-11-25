@@ -45,49 +45,51 @@ const _solicitarStringOpcional = (mensaje, max = 500) => {
     } while (valor.length > max);
     return valor;
 };
-//pide y valida una fecha de vencimiento
+
 /**
- * @param {string} mensaje
- * @param {boolean} [opcional=false]
- * @returns {Date | null | undefined | string}
+ * Pide una fecha de vencimiento.
+ * Si el usuario presiona Enter sin escribir nada, retorna null.
+ * Si escribe una fecha válida, retorna el objeto Date.
+ * * @param {string} mensaje
+ * @returns {Date | null}
  */
-export const solicitarVencimiento = (mensaje, opcional = false) =>{
-    const regexFecha =  /^\d{4}-\d{2}-\d{2}$/; //^ → inicio de la cadena \d{4} → 4 dígitos (año) - → un guion literal \d{2} → 2 dígitos (mes) - → otro guion \d{2} → 2 dígitos (día) $ → fin de la cadena
-    const hoy = new Date(getHoy());
+export const solicitarVencimiento = (mensaje) => {
+    const regexFecha = /^\d{4}-\d{2}-\d{2}$/;
+    const hoy = new Date();
 
-    let input;
-    while(true){
-        input = prompt(mensaje);
+    while (true) {
+        // Mostramos el mensaje indicando que puede omitir
+        const input = prompt(`${mensaje} `);
 
-        if (input === null){ //cancelar
-            return null;
-        }
-        
-        if (opcional && input === '') { //Omitir
-            return undefined
+        // CASO 1: Si cancela o da Enter vacío -> Retorna NULL
+        if (input === null || input.trim() === '') {
+            return undefined;
         }
 
-        if (opcional && input.toLowerCase() === 'borrar'){ //eliminar fecha
-            return 'BORRAR';
+        const fechaStr = input.trim();
+
+        // Validación de Formato (Regex)
+        if (!regexFecha.test(fechaStr)) {
+            console.log("❌ Error: Formato incorrecto. Usa AAAA-MM-DD");
+            continue; // Vuelve a pedir
         }
 
-        if (!regexFecha.test(input)){
-            console.log("Error, ese no es el formato correcto, usa AAAA-MM-DD");
+        // Validación de Fecha Real
+        const fechaInput = new Date(fechaStr);
+
+        if (isNaN(fechaInput.getTime())) {
+            console.log("❌ Error: Fecha inválida (revisa el día o mes).");
             continue;
         }
 
-        const fechaInput = new Date(input);  
-
-        if(isNaN(fechaInput.getTime())){//fecha invalida con respecto al mes por ej 
-            console.log("Error, fecha invalida");
-        }
-
-        if (fechaInput < hoy){
-            console.log("Error, la fecha de vencimiento no puede estar en pasado");
+        // Validacion de Pasado
+        if (fechaInput < hoy) {
+            console.log("❌ Error: La fecha de vencimiento no puede ser anterior a hoy.");
             continue;
         }
-        // Si la fecha es valida, se devuelve el objeto DATE
-        return fechaInput
+
+        // Si pasó todas las validaciones, retornamos el objeto Date
+        return fechaInput;
     }
 };
 
@@ -101,31 +103,27 @@ export const solicitarPropsCreacion = () => {
     console.clear();
     console.log("--- 1. Nueva Tarea ---");
     
-    const titulo = _solicitarStringNoVacio("Título (max 100): ");
+    const titulo = _solicitarStringNoVacio("Titulo: ");
     
     if (titulo === null){
         return null;
     }
     
-    const descripcion = _solicitarStringOpcional("Descripcion (opcional, max 500): ");
+    const descripcion = _solicitarStringOpcional("Descripcion (opcional): ");
     
     if (descripcion === null){
         return null;
     }
     const props = { titulo, descripcion };
     
-    const dificultad = solicitarDificultad("Dificultad (Opcional, Enter para 'Facil'): ", DIFICULTADES.FACIL, true);
+    const dificultad = solicitarDificultad("Dificultad (ENTER = FACIL): ", DIFICULTADES.FACIL, true);
     if (dificultad === null) return null; // Cancelar
     if (dificultad) props.dificultad = dificultad;
 
-    const vencimiento = solicitarVencimiento("Vencimiento (AAAA-MM-DD, opcional, Enter para omitir");
-    if (vencimiento === null){
-        return null;
-    }
+    const vencimiento = solicitarVencimiento("Vencimiento (AAAA-MM-DD). ENTER SI DESEA OMITIR");
 
-    if (vencimiento){
-        props.vencimiento = vencimiento;
-    }
+    props.vencimiento = vencimiento;
+    
     return props;
 };
 
@@ -196,9 +194,25 @@ export const solicitarPropsModificacion = (tarea) => {
     if (dificultad === null) return null;
     if (dificultad) cambios.dificultad = dificultad;
 
+    // 5. Vencimiento
+    // Formateamos la fecha actual para mostrarla en el prompt
+    const vencimientoActual = tarea.vencimiento 
+        ? new Date(tarea.vencimiento).toISOString().split('T')[0] 
+        : 'Sin fecha';
+    
+    // Reutilizamos la función que creaste. Si el usuario da Enter vacío, retorna null.
+    const nuevaFecha = solicitarVencimiento(`Vencimiento [${vencimientoActual}]`);
+
+    // Si retorna una fecha válida (no es null), la agregamos a los cambios.
+    if (nuevaFecha !== null) {
+        cambios.vencimiento = nuevaFecha;
+    }
+
+    // Verificamos si hubo algún cambio
     if (Object.keys(cambios).length === 0) {
         return null; // No hubo cambios
     }
+    
     return cambios;
 };
 
@@ -247,7 +261,6 @@ export const solicitarEstado = (mensaje, defaultVal, opcional = false) => {
     console.log(`  [2] ${ESTADOS.EN_CURSO}`);
     console.log(`  [3] ${ESTADOS.TERMINADA}`);
     console.log(`  [4] ${ESTADOS.CANCELADA}`);
-    if (opcional) console.log("  [Enter] No cambiar");
     
     const input = prompt("Seleccione: ");
     if (input === null) return null; // Cancelar
@@ -274,7 +287,6 @@ export const solicitarDificultad = (mensaje, defaultVal, opcional = false) => {
     console.log(`  [1] ${DIFICULTADES.FACIL}`);
     console.log(`  [2] ${DIFICULTADES.MEDIA}`);
     console.log(`  [3] ${DIFICULTADES.DIFICIL}`);  
-    if (opcional) console.log("  [Enter] No cambiar");
     
     const input = prompt("Seleccione: ");
     if (input === null) return null; // Cancelar
@@ -283,7 +295,7 @@ export const solicitarDificultad = (mensaje, defaultVal, opcional = false) => {
     switch(input) {
         case '1': return DIFICULTADES.FACIL;
         case '2': return DIFICULTADES.MEDIA;
-        case '3': return DIFICULTADES.DIFiCIL;
+        case '3': return DIFICULTADES.DIFICIL;
         default: return defaultVal || DIFICULTADES.FACIL;
     }
 };
@@ -304,3 +316,20 @@ export const solicitarOpcionMenu = () => {
     const opcion = prompt("Selecciona una opcion: ");
     return opcion === null ? '0' : opcion; // Salir si presiona Ctrl+C
 };
+
+
+export const esperarAccionEnDetalle = () => {
+    console.log("\nAcciones disponibles:");
+    console.log("  [1] Modificar Tarea");
+    console.log("  [2] Eliminar Tarea");
+    console.log("  [Enter] Volver al menú principal");
+    let accion;
+    do{
+        const input = prompt("Seleccione una opcion: ");
+        if (input === null || input === '') {
+            return 0; // Volver al menu
+        }
+        accion = input.toUpperCase();
+    } while (accion !== '1' && accion !== '2');
+    return accion;
+}

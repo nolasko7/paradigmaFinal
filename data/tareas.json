@@ -1,0 +1,57 @@
+[
+  {
+    "id": "ce0dd7cc-3789-4f65-b975-98e8631035a7",
+    "titulo": "nico",
+    "descripcion": "",
+    "estado": "Pendiente",
+    "dificultad": "Facil",
+    "creacion": "2025-11-25T19:58:38.908Z",
+    "ultimaEdicion": "2025-11-25T19:58:47.827Z",
+    "vencimiento": "2022-11-25T19:58:47.827Z",
+    "eliminado": true
+  },
+  {
+    "id": "3af8546d-5971-43b6-95f4-87a6753ae95f",
+    "titulo": "nola",
+    "descripcion": "",
+    "estado": "Pendiente",
+    "dificultad": "Dificil",
+    "creacion": "2025-11-25T19:58:43.407Z",
+    "ultimaEdicion": "2025-11-25T19:58:43.407Z",
+    "vencimiento": null,
+    "eliminado": false
+  },
+  {
+    "id": "348914c0-24dc-45b8-9ef7-b6d656310c60",
+    "titulo": "nico",
+    "descripcion": "",
+    "estado": "Terminada",
+    "dificultad": "Dificil",
+    "creacion": "2025-11-25T20:00:46.702Z",
+    "ultimaEdicion": "2025-11-25T20:09:43.120Z",
+    "vencimiento": "2026-11-25T00:00:00.000Z",
+    "eliminado": false
+  },
+  {
+    "id": "1cd0003e-5969-48d7-9854-2e9059a36745",
+    "titulo": "nola",
+    "descripcion": "",
+    "estado": "Pendiente",
+    "dificultad": "Dificil",
+    "creacion": "2025-11-25T20:00:54.922Z",
+    "ultimaEdicion": "2025-11-25T20:00:54.922Z",
+    "vencimiento": null,
+    "eliminado": false
+  },
+  {
+    "id": "bc0a03ee-b3ee-41de-b305-72a7239c43bd",
+    "titulo": "mati",
+    "descripcion": "",
+    "estado": "Pendiente",
+    "dificultad": "Media",
+    "creacion": "2025-11-25T20:00:58.824Z",
+    "ultimaEdicion": "2025-11-25T20:00:58.824Z",
+    "vencimiento": null,
+    "eliminado": false
+  }
+]
